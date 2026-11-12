@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rebus Challenge · Host</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  body { overflow: hidden; }
+  .hbar { height: 64px; display: flex; align-items: center; gap: 18px; padding: 0 28px; border-bottom: 1px solid var(--line); background: var(--bg2); }
+  .brand { font-weight: 900; letter-spacing: .14em; font-size: 15px; }
+  .brand b { color: var(--acc); }
+  .spacer { flex: 1; }
+  .joinmini { font-size: 15px; color: var(--muted); }
+  .joinmini b { color: var(--fg); }
+  main { height: calc(100vh - 64px); padding: 26px 36px; display: flex; flex-direction: column; }
+
+  /* lobby */
+  .lobby { display: grid; grid-template-columns: 1.05fr 1fr; gap: 36px; flex: 1; min-height: 0; }
+  .panel { background: var(--card); border-radius: 22px; padding: 28px 30px; min-height: 0; }
+  .joinbig h2 { margin: 0 0 6px; font-size: 20px; color: var(--muted); font-weight: 700; }
+  .joinurl { font-size: clamp(20px, 2.2vw, 34px); font-weight: 800; word-break: break-all; margin: 6px 0 18px; }
+  .codebox { display: flex; align-items: center; gap: 22px; }
+  .code { font-size: clamp(48px, 6vw, 92px); font-weight: 900; letter-spacing: .12em; color: var(--acc); line-height: 1; }
+  #qr { background: #fff; padding: 10px; border-radius: 12px; width: 172px; height: 172px; }
+  #qr img, #qr canvas { width: 152px !important; height: 152px !important; }
+  .players { margin-top: 22px; }
+  .players h3 { margin: 0 0 12px; font-size: 18px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; max-height: 24vh; overflow: auto; }
+  .chip { background: #0b1f35; border: 1px solid var(--line); padding: 8px 14px; border-radius: 99px; font-weight: 700; font-size: 16px; animation: pop .25s ease; }
+  @keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .howto img { width: 100%; border-radius: 14px; border: 2px solid var(--line); }
+  .howto ol { margin: 16px 0 0; padding-left: 22px; font-size: 18px; line-height: 1.55; }
+  .controls { display: flex; align-items: center; gap: 14px; margin-top: 20px; flex-wrap: wrap; }
+  .controls .field { width: auto; padding: 10px 12px; font-size: 16px; }
+
+  /* question */
+  .qtop { display: flex; align-items: center; gap: 24px; margin-bottom: 18px; }
+  .qnum { font-size: 22px; font-weight: 800; }
+  .qnum span { color: var(--muted); font-weight: 600; }
+  .timer { font-size: 56px; font-weight: 900; min-width: 92px; text-align: center; color: var(--acc); font-variant-numeric: tabular-nums; }
+  .timer.low { color: var(--bad); }
+  .count { font-size: 22px; font-weight: 700; }
+  .qbar { flex: 1; }
+  .stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+  .stage img { max-height: 100%; max-width: 100%; border-radius: 20px; border: 2px solid var(--line); }
+  .qfoot { display: flex; align-items: center; gap: 16px; margin-top: 18px; }
+
+  /* reveal */
+  .reveal { display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; flex: 1; min-height: 0; }
+  .reveal .left img { width: 100%; border-radius: 18px; border: 2px solid var(--line); }
+  .answer-label { margin: 22px 0 4px; color: var(--muted); font-weight: 700; letter-spacing: .1em; font-size: 14px; text-transform: uppercase; }
+  .answer { font-size: clamp(32px, 3.6vw, 56px); font-weight: 900; color: var(--acc); line-height: 1.1; }
+  .results { overflow: auto; min-height: 0; }
+  .rrow { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; background: var(--card); margin-bottom: 8px; font-size: 17px; }
+  .rrow .nm { font-weight: 800; min-width: 120px; }
+  .rrow .ans { flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rrow .pts { font-weight: 900; font-variant-numeric: tabular-nums; }
+  .rrow.okrow { border-left: 5px solid var(--ok); }
+  .rrow.badrow { border-left: 5px solid var(--bad); }
+  .rrow.norow { border-left: 5px solid #48607f; }
+  .sec { margin: 14px 0 8px; font-size: 14px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+  /* leaderboard */
+  .lb { max-width: 1100px; width: 100%; margin: 0 auto; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .lb h1 { font-size: 38px; margin: 0 0 18px; }
+  .lbrows { overflow: auto; min-height: 0; }
+  .lbrow { display: grid; grid-template-columns: 56px 1fr 90px 120px; align-items: center; gap: 14px; padding: 12px 18px; background: var(--card); border-radius: 14px; margin-bottom: 10px; font-size: 22px; }
+  .lbrow .rk { font-weight: 900; font-size: 26px; color: var(--acc); }
+  .lbrow .nm { font-weight: 800; }
+  .lbrow .mv { font-size: 15px; font-weight: 800; }
+  .lbrow .tot { text-align: right; font-weight: 900; font-variant-numeric: tabular-nums; }
+  .lbrow .gain { font-size: 15px; color: var(--ok); font-weight: 800; text-align: right; }
+  .actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; }
+
+  /* podium */
+  .podium { display: flex; align-items: flex-end; justify-content: center; gap: 22px; margin: 10px 0 26px; }
+  .pod { width: 230px; text-align: center; }
+  .pod .who { font-size: 24px; font-weight: 900; margin-bottom: 8px; overflow-wrap: anywhere; line-height: 1.15; }
+  .pod .sc { color: var(--muted); font-weight: 700; margin-bottom: 10px; }
+  .pod .blk { background: var(--card); border-radius: 16px 16px 0 0; display: flex; align-items: center; justify-content: center; font-size: 54px; font-weight: 900; color: var(--acc); }
+  .pod.p1 .blk { height: 220px; background: #24507f; }
+  .pod.p2 .blk { height: 160px; }
+  .pod.p3 .blk { height: 120px; }
+</style>
+</head>
+<body>
+<header class="hbar">
+  <div class="brand">REBUS <b>CHALLENGE</b></div>
+  <span class="pill"><i id="dot" class="dot"></i><span id="dotTxt">Connecting…</span></span>
+  <div class="spacer"></div>
+  <div id="joinmini" class="joinmini"></div>
+  <button id="newBtn" class="btn ghost small">New game</button>
+</header>
+<main id="app"></main>
+
+<div id="modal" class="modal hidden"><div class="box">
+  <h3 id="mTitle"></h3><div id="mBody" class="muted"></div>
+  <div class="row"><button id="mNo" class="btn ghost small">Cancel</button><button id="mYes" class="btn small">OK</button></div>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="common.js"></script>
+<script>
+(function () {
+  const N = RB.PUZZLES.length;
+  const KEY = 'rebus-host-v1' + (RB.MOCK ? '-mock' : '');
+  const app = document.getElementById('app');
+  let S = RB.load(KEY) || fresh();
+  let sub = null, qTimer = null, tick = null, syncTimer = null, viewKey = '';
+
+  function fresh() {
+    return { code: RB.roomCode(), phase: 'lobby', q: -1, dur: 30, players: {}, answers: {}, qStart: 0, qEnd: 0, lastPId: null };
+  }
+  const save = () => RB.store(KEY, S);
+  const ids = () => Object.keys(S.players);
+  const nameOf = (id) => (S.players[id] && S.players[id].name) || 'Player';
+
+  function joinUrl() {
+    const base = location.origin + location.pathname.replace(/host\.html$/, '');
+    return base + '?room=' + S.code + (RB.MOCK ? '&mock=1' : '');
+  }
+  function prettyUrl() { return joinUrl().replace(/^https?:\/\//, '').replace(/&mock=1$/, ''); }
+
+  /* ---------- scoring ---------- */
+  function totalsUpTo(qi) {
+    const t = {};
+    ids().forEach((id) => (t[id] = 0));
+    for (let q = 0; q <= qi; q++) {
+      const A = S.answers[q] || {};
+      Object.keys(A).forEach((id) => { if (id in t) t[id] += A[id].pts || 0; });
+    }
+    return t;
+  }
+  function order(t) { return Object.keys(t).sort((a, b) => (t[b] - t[a]) || nameOf(a).localeCompare(nameOf(b))); }
+  function ranks(t) {
+    const o = order(t), r = {};
+    o.forEach((id, i) => { r[id] = i > 0 && t[id] === t[o[i - 1]] ? r[o[i - 1]] : i + 1; });
+    return r;
+  }
+
+  /* ---------- realtime ---------- */
+  function setStatus(on) {
+    document.getElementById('dot').className = 'dot ' + (on ? 'on' : 'off');
+    document.getElementById('dotTxt').textContent = on ? 'Live' : 'Reconnecting…';
+  }
+  function connect() {
+    if (sub) sub.close();
+    sub = RB.subscribe(RB.topic(S.code, 'p'), S.lastPId || 'all', onPlayerMsg, setStatus);
+  }
+  let saveT = null;
+  function onPlayerMsg(b, m) {
+    S.lastPId = m.id;
+    if (!b || typeof b.id !== 'string') return;
+    const id = b.id.slice(0, 16);
+    const name = RB.cleanName(b.name);
+    if (b.t === 'join' || b.t === 'ans') {
+      if (!S.players[id]) { S.players[id] = { name: name || 'Player', joined: Date.now() }; scheduleSync(); }
+      else if (name && S.players[id].name !== name) { S.players[id].name = name; scheduleSync(); }
+      if (b.t === 'join') scheduleSync();
+    }
+    if (b.t === 'ans') handleAnswer(id, b);
+    clearTimeout(saveT); saveT = setTimeout(save, 300);
+    render();
+  }
+  function handleAnswer(id, b) {
+    if (S.phase !== 'q' || b.q !== S.q) return;
+    const now = Date.now();
+    if (now > S.qEnd + 1500) return;
+    const A = S.answers[S.q] || (S.answers[S.q] = {});
+    if (A[id]) return;
+    const el = Math.max(0, now - S.qStart);
+    const ok = RB.isCorrect(S.q, b.a);
+    A[id] = { a: String(b.a || '').slice(0, 80), el, ok, pts: ok ? RB.points(el, S.dur) : 0 };
+    const n = ids().length;
+    if (n && Object.keys(A).length >= n) { clearTimeout(qTimer); qTimer = setTimeout(reveal, 1200); }
+  }
+  function scheduleSync() { clearTimeout(syncTimer); syncTimer = setTimeout(broadcast, 1200); }
+
+  function broadcast() {
+    const msg = { t: 'st', ph: S.phase, q: S.q, N, code: S.code };
+    const all = ids();
+    if (S.phase === 'lobby') msg.pl = all.slice(0, 80).map((id) => [id, nameOf(id).slice(0, 24)]);
+    if (S.phase === 'q') { msg.dur = S.dur; msg.left = Math.max(0, Math.round((S.qEnd - Date.now()) / 100) / 10); msg.ids = all; }
+    if (S.phase === 'rev' || S.phase === 'lb' || S.phase === 'end') {
+      const t = totalsUpTo(S.q), rk = ranks(t), A = S.answers[S.q] || {};
+      msg.n = all.length;
+      msg.r = {};
+      all.forEach((id) => { const a = A[id]; msg.r[id] = [a ? (a.ok ? 1 : 0) : -1, a ? a.pts : 0, t[id] || 0, rk[id] || 0]; });
+      if (S.phase === 'rev') msg.ans = RB.PUZZLES[S.q].answer;
+      else msg.top = order(t).slice(0, S.phase === 'end' ? 3 : 5).map((id) => [nameOf(id).slice(0, 20), t[id] || 0]);
+    }
+    RB.publish(RB.topic(S.code, 'h'), msg);
+  }
+
+  /* ---------- game flow ---------- */
+  function startQuestion(i) {
+    clearTimeout(qTimer);
+    S.q = i; S.phase = 'q'; S.qStart = Date.now(); S.qEnd = S.qStart + S.dur * 1000;
+    S.answers[i] = S.answers[i] || {};
+    save(); broadcast(); render();
+    qTimer = setTimeout(reveal, S.dur * 1000 + 1500);
+  }
+  function reveal() {
+    clearTimeout(qTimer);
+    if (S.phase !== 'q') return;
+    S.phase = 'rev'; save(); broadcast(); render();
+  }
+  function showBoard() { S.phase = 'lb'; save(); broadcast(); render(); }
+  function next() { if (S.q < N - 1) startQuestion(S.q + 1); else { S.phase = 'end'; save(); broadcast(); render(); } }
+  function toggleAccept(id) {
+    const A = S.answers[S.q] || (S.answers[S.q] = {});
+    const a = A[id];
+    if (a && a.manual && a.ok) {
+      if (a.el == null) delete A[id]; else { a.ok = false; a.pts = 0; a.manual = false; }
+    } else if (a && !a.ok) {
+      a.ok = true; a.manual = true; a.pts = RB.points(a.el, S.dur);
+    } else if (!a) {
+      const k = Object.values(A).filter((x) => x.ok).length;
+      A[id] = { a: '(marked correct by host)', el: null, ok: true, manual: true, pts: Math.max(500, 1000 - 100 * k) };
+    }
+    save(); broadcast(); render(true);
+  }
+  function addManual(name) {
+    name = RB.cleanName(name);
+    if (!name) return;
+    S.players['m' + RB.rid()] = { name, joined: Date.now(), manual: true };
+    save(); scheduleSync(); render(true);
+  }
+
+  /* ---------- modal ---------- */
+  function ask(title, body, yesText, onYes) {
+    const m = document.getElementById('modal');
+    document.getElementById('mTitle').textContent = title;
+    document.getElementById('mBody').textContent = body;
+    const yes = document.getElementById('mYes'), no = document.getElementById('mNo');
+    yes.textContent = yesText;
+    m.classList.remove('hidden');
+    yes.onclick = () => { m.classList.add('hidden'); onYes(); };
+    no.onclick = () => m.classList.add('hidden');
+  }
+  document.getElementById('newBtn').onclick = () =>
+    ask('Start a new game?', 'This creates a new game code and clears all players and scores.', 'New game', () => {
+      clearTimeout(qTimer); S = fresh(); save(); viewKey = ''; connect(); render(true);
+    });
+
+  /* ---------- rendering ---------- */
+  function render(force) {
+    const key = S.phase + ':' + S.q;
+    const rebuild = force || key !== viewKey;
+    viewKey = key;
+    document.getElementById('joinmini').innerHTML = S.phase === 'lobby' ? '' : 'Join: <b>' + RB.esc(prettyUrl()) + '</b>';
+    if (S.phase === 'lobby') renderLobby(rebuild);
+    else if (S.phase === 'q') renderQuestion(rebuild);
+    else if (S.phase === 'rev') renderReveal();
+    else if (S.phase === 'lb') renderBoard();
+    else renderEnd();
+  }
+
+  function renderLobby(rebuild) {
+    if (rebuild) {
+      app.innerHTML = `
+        <div class="lobby">
+          <div class="panel joinbig">
+            <h2>Join on your phone or laptop</h2>
+            <div class="joinurl">${RB.esc(prettyUrl())}</div>
+            <div class="codebox">
+              <div id="qr"></div>
+              <div><div class="muted" style="font-weight:700;margin-bottom:8px">GAME CODE</div><div class="code">${S.code}</div></div>
+            </div>
+            <div class="players"><h3>Players joined: <span id="pcount" class="acc">0</span></h3><div id="chips" class="chips"></div></div>
+          </div>
+          <div class="panel howto">
+            <img src="img/example.jpg" alt="Example: I over STAND means I understand">
+            <ol>
+              <li>Say what you see: each picture hides a word or phrase.</li>
+              <li>Type your answer before the timer runs out.</li>
+              <li>Correct answers score up to <b class="acc">1,000</b> points. Faster is better.</li>
+            </ol>
+            <div class="controls">
+              <label class="muted">Timer
+                <select id="dur" class="field">${[20, 30, 45, 60].map((s) => `<option value="${s}" ${s === S.dur ? 'selected' : ''}>${s} seconds</option>`).join('')}</select>
+              </label>
+              <input id="addName" class="field" placeholder="Add a player by name" maxlength="24" style="flex:1;min-width:180px">
+              <button id="addBtn" class="btn ghost small">Add</button>
+            </div>
+            <div class="actions"><button id="primary" class="btn big">Start game ▶</button></div>
+          </div>
+        </div>`;
+      if (window.QRCode) { try { new QRCode(document.getElementById('qr'), { text: joinUrl(), width: 152, height: 152, colorDark: '#0F2741', colorLight: '#ffffff' }); } catch (e) {} }
+      else document.getElementById('qr').classList.add('hidden');
+      document.getElementById('dur').onchange = (e) => { S.dur = +e.target.value; save(); };
+      const add = () => { const f = document.getElementById('addName'); addManual(f.value); f.value = ''; };
+      document.getElementById('addBtn').onclick = add;
+      document.getElementById('addName').onkeydown = (e) => { if (e.key === 'Enter') { e.stopPropagation(); add(); } };
+      document.getElementById('primary').onclick = () => {
+        if (!ids().length) { ask('No players yet', 'Nobody has joined. Start anyway?', 'Start', () => startQuestion(0)); return; }
+        startQuestion(0);
+      };
+    }
+    const all = ids();
+    document.getElementById('pcount').textContent = all.length;
+    const chips = document.getElementById('chips');
+    if (chips.childElementCount !== all.length || rebuild) chips.innerHTML = all.map((id) => `<span class="chip">${RB.esc(nameOf(id))}</span>`).join('');
+  }
+
+  function renderQuestion(rebuild) {
+    const P = RB.PUZZLES[S.q];
+    if (rebuild) {
+      app.innerHTML = `
+        <div class="qtop">
+          <div class="qnum">Puzzle ${S.q + 1} <span>of ${N}</span></div>
+          <div class="qbar"><div id="qbar" class="bar"><i style="width:100%"></i></div></div>
+          <div class="count"><span id="acount">0</span> / <span id="pnum">0</span> answered</div>
+          <div id="timer" class="timer">${S.dur}</div>
+        </div>
+        <div class="stage"><img src="${P.img}" alt="Puzzle ${S.q + 1}"></div>
+        <div class="qfoot"><span class="muted">Type your answer on your device</span><div class="spacer"></div><button id="primary" class="btn ghost">Reveal answer now</button></div>`;
+      document.getElementById('primary').onclick = reveal;
+      clearInterval(tick);
+      tick = setInterval(updateTimer, 200);
+    }
+    document.getElementById('acount').textContent = Object.keys(S.answers[S.q] || {}).length;
+    document.getElementById('pnum').textContent = ids().length;
+    updateTimer();
+  }
+  function updateTimer() {
+    if (S.phase !== 'q') { clearInterval(tick); return; }
+    const left = Math.max(0, (S.qEnd - Date.now()) / 1000);
+    const t = document.getElementById('timer'), b = document.getElementById('qbar');
+    if (!t) return;
+    t.textContent = Math.ceil(left);
+    t.classList.toggle('low', left <= 5);
+    b.classList.toggle('low', left <= 5);
+    b.firstElementChild.style.width = (100 * left / S.dur) + '%';
+    if (left <= 0 && !qTimer) reveal();
+  }
+
+  function renderReveal() {
+    clearInterval(tick);
+    const P = RB.PUZZLES[S.q], A = S.answers[S.q] || {};
+    const all = ids();
+    const right = all.filter((id) => A[id] && A[id].ok).sort((a, b) => A[b].pts - A[a].pts);
+    const wrong = all.filter((id) => A[id] && !A[id].ok);
+    const none = all.filter((id) => !A[id]);
+    const row = (id, cls, ansTxt, pts, btn) => `
+      <div class="rrow ${cls}"><span class="nm">${RB.esc(nameOf(id))}</span><span class="ans">${RB.esc(ansTxt)}</span>
+      ${pts != null ? `<span class="pts ok">+${RB.fmt(pts)}</span>` : ''}${btn ? `<button class="btn ghost small" data-acc="${id}">${btn}</button>` : ''}</div>`;
+    app.innerHTML = `
+      <div class="reveal">
+        <div class="left">
+          <img src="${P.img}" alt="">
+          <div class="answer-label">Answer</div>
+          <div class="answer">${RB.esc(P.answer)}</div>
+          <p class="muted" style="font-size:18px">${right.length} of ${all.length} got it right</p>
+        </div>
+        <div class="results">
+          ${right.length ? '<div class="sec">Correct</div>' : ''}
+          ${right.map((id) => row(id, 'okrow', A[id].a, A[id].pts, A[id].manual ? 'Undo' : '')).join('')}
+          ${wrong.length ? '<div class="sec">Not quite</div>' : ''}
+          ${wrong.map((id) => row(id, 'badrow', A[id].a, null, 'Accept')).join('')}
+          ${none.length ? '<div class="sec">No answer</div>' : ''}
+          ${none.map((id) => row(id, 'norow', '', null, 'Mark correct')).join('')}
+        </div>
+      </div>
+      <div class="actions"><button id="primary" class="btn big">Show leaderboard ▶</button></div>`;
+    app.querySelectorAll('[data-acc]').forEach((b) => (b.onclick = () => toggleAccept(b.dataset.acc)));
+    document.getElementById('primary').onclick = showBoard;
+  }
+
+  function renderBoard() {
+    const t = totalsUpTo(S.q), prev = totalsUpTo(S.q - 1);
+    const rk = ranks(t), prk = ranks(prev), A = S.answers[S.q] || {};
+    const o = order(t).slice(0, 10);
+    const last = S.q >= N - 1;
+    app.innerHTML = `
+      <div class="lb">
+        <h1>Leaderboard <span class="muted" style="font-size:22px;font-weight:600">after puzzle ${S.q + 1} of ${N}</span></h1>
+        <div class="lbrows">
+          ${o.map((id) => {
+            const d = S.q > 0 ? (prk[id] || 0) - rk[id] : 0;
+            const mv = d > 0 ? `<span class="mv ok">▲ ${d}</span>` : d < 0 ? `<span class="mv bad">▼ ${-d}</span>` : '<span class="mv muted"></span>';
+            const g = A[id] && A[id].pts ? `+${RB.fmt(A[id].pts)}` : '';
+            return `<div class="lbrow"><span class="rk">${rk[id]}</span><span class="nm">${RB.esc(nameOf(id))} ${mv}</span><span class="gain">${g}</span><span class="tot">${RB.fmt(t[id])}</span></div>`;
+          }).join('') || '<p class="muted">No players yet.</p>'}
+        </div>
+        <div class="actions"><button id="primary" class="btn big">${last ? 'Final results ▶' : 'Next puzzle ▶'}</button></div>
+      </div>`;
+    document.getElementById('primary').onclick = next;
+  }
+
+  function renderEnd() {
+    const t = totalsUpTo(N - 1), rk = ranks(t), o = order(t);
+    const pod = (i, cls) => o[i] ? `<div class="pod ${cls}"><div class="who">${RB.esc(nameOf(o[i]))}</div><div class="sc">${RB.fmt(t[o[i]])} pts</div><div class="blk">${rk[o[i]]}</div></div>` : '';
+    app.innerHTML = `
+      <div class="lb">
+        <h1 style="text-align:center">🏆 Final results</h1>
+        <div class="podium">${pod(1, 'p2')}${pod(0, 'p1')}${pod(2, 'p3')}</div>
+        <div class="lbrows">${o.slice(3).map((id) => `<div class="lbrow"><span class="rk">${rk[id]}</span><span class="nm">${RB.esc(nameOf(id))}</span><span></span><span class="tot">${RB.fmt(t[id])}</span></div>`).join('')}</div>
+      </div>`;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    if (!document.getElementById('modal').classList.contains('hidden')) return;
+    if (e.key === 'Enter' || e.key === 'ArrowRight' || e.key === ' ') {
+      const p = document.getElementById('primary');
+      if (p) { e.preventDefault(); p.click(); }
+    }
+  });
+
+  // Resume after a reload: keep the timer running for an open question.
+  if (S.phase === 'q') {
+    const left = S.qEnd - Date.now();
+    qTimer = setTimeout(reveal, Math.max(0, left) + 1500);
+  }
+  save();
+  connect();
+  render(true);
+  setTimeout(broadcast, 800);
+})();
+</script>
+</body>
+</html>
