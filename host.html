@@ -112,7 +112,7 @@
   let sub = null, qTimer = null, tick = null, syncTimer = null, viewKey = '';
 
   function fresh() {
-    return { code: RB.roomCode(), phase: 'lobby', q: -1, dur: 30, players: {}, answers: {}, qStart: 0, qEnd: 0, lastPId: null };
+    return { code: RB.roomCode(), phase: 'lobby', q: -1, dur: 60, players: {}, answers: {}, qStart: 0, qEnd: 0, lastPId: null };
   }
   const save = () => RB.store(KEY, S);
   const ids = () => Object.keys(S.players);
